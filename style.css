@@ -4,6 +4,7 @@
     box-sizing: border-box;
 }
 
+
 html,
 body {
 
@@ -16,20 +17,25 @@ body {
 
     touch-action: none;
 
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
+    user-select: none;
+
+    -webkit-user-select: none;
+
 }
+
 
 body {
-    position: relative;
+
+    position: fixed;
+
+    inset: 0;
+
 }
 
 
-/* =====================================
+/* =========================================
    CANVAS
-===================================== */
+========================================= */
 
 #space {
 
@@ -42,19 +48,14 @@ body {
 
     display: block;
 
-    background:
-        radial-gradient(
-            circle at center,
-            #13001f,
-            #030006 60%,
-            #000 100%
-        );
+    background: #000;
+
 }
 
 
-/* =====================================
+/* =========================================
    TÍTULO
-===================================== */
+========================================= */
 
 .title {
 
@@ -67,76 +68,99 @@ body {
     transform:
         translateX(-50%);
 
+    z-index: 20;
+
     display: flex;
 
     align-items: center;
 
     justify-content: center;
 
-    gap: 20px;
-
-    z-index: 20;
+    gap: 18px;
 
     pointer-events: none;
 
     white-space: nowrap;
+
 }
+
 
 .title h1 {
 
     color: white;
 
-    font-size:
-        clamp(22px, 4vw, 45px);
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
 
     font-weight: 400;
+
+    font-size:
+        clamp(20px, 4vw, 42px);
 
     letter-spacing: 4px;
 
     text-shadow:
 
-        0 0 5px #fff,
+        0 0 5px #ffffff,
 
-        0 0 15px #ff8cff,
+        0 0 12px #e9a0ff,
 
-        0 0 30px #b000ff,
+        0 0 25px #c000ff,
 
-        0 0 50px #7500ff;
+        0 0 45px #8b00ff;
+
 }
+
 
 .title span {
 
-    color: #e66cff;
+    color: #e88aff;
 
     font-size:
-        clamp(30px, 5vw, 55px);
+        clamp(30px, 5vw, 52px);
 
     text-shadow:
 
         0 0 10px #ff00ff,
 
-        0 0 25px #a000ff;
+        0 0 25px #b000ff;
 
     animation:
-        pulse 1.5s infinite alternate;
+        heartPulse 1.8s
+        ease-in-out
+        infinite alternate;
+
 }
 
 
-@keyframes pulse {
+@keyframes heartPulse {
 
     from {
-        transform: scale(1);
+
+        transform:
+            scale(1);
+
+        opacity: .75;
+
     }
 
     to {
-        transform: scale(1.15);
+
+        transform:
+            scale(1.18);
+
+        opacity: 1;
+
     }
+
 }
 
 
-/* =====================================
+/* =========================================
    BOTONES
-===================================== */
+========================================= */
 
 .control {
 
@@ -144,134 +168,134 @@ body {
 
     z-index: 30;
 
-    width: 58px;
-    height: 58px;
+    width: 56px;
+
+    height: 56px;
 
     border-radius: 50%;
 
     border: 1px solid
-        rgba(230, 120, 255, .8);
+        rgba(255,255,255,.55);
 
     background:
-        rgba(20, 0, 35, .55);
+        rgba(15,0,30,.45);
 
     color: white;
 
-    font-size: 26px;
-
-    cursor: pointer;
+    font-size: 25px;
 
     display: flex;
 
-    justify-content: center;
-
     align-items: center;
 
+    justify-content: center;
+
+    cursor: pointer;
+
     backdrop-filter:
+        blur(8px);
+
+    -webkit-backdrop-filter:
         blur(8px);
 
     box-shadow:
 
         0 0 10px
-        rgba(200, 0, 255, .5),
+        rgba(210,0,255,.5),
 
-        inset 0 0 15px
-        rgba(180, 0, 255, .15);
+        0 0 25px
+        rgba(150,0,255,.25);
 
     transition:
         transform .2s,
         box-shadow .2s;
-}
 
-
-.control:hover {
-
-    transform: scale(1.1);
-
-    box-shadow:
-
-        0 0 15px #ff00ff,
-
-        0 0 35px #8a00ff;
 }
 
 
 .control:active {
 
     transform:
-        scale(.9);
+        scale(.88);
+
 }
 
-
-/* Música */
 
 .music {
 
-    left: 25px;
+    left: 20px;
 
-    top: 25px;
+    top: 20px;
+
 }
 
-
-/* Pantalla completa */
 
 .fullscreen {
 
-    right: 25px;
+    right: 20px;
 
-    top: 25px;
+    top: 20px;
+
 }
 
 
-/* =====================================
+/* =========================================
    CELULAR
-===================================== */
+========================================= */
 
 @media (max-width: 600px) {
 
     .title {
 
-        top: 20px;
+        top: 18px;
 
-        gap: 8px;
+        gap: 7px;
 
-        width: 100%;
     }
+
 
     .title h1 {
 
-        font-size: 20px;
+        font-size: 19px;
 
         letter-spacing: 2px;
+
     }
+
 
     .title span {
 
-        font-size: 28px;
+        font-size: 27px;
+
     }
 
 
     .control {
 
-        width: 48px;
-        height: 48px;
+        width: 46px;
 
-        font-size: 21px;
+        height: 46px;
+
+        font-size: 20px;
+
     }
 
 
     .music {
 
-        left: 15px;
+        left: 12px;
 
-        top: 15px;
+        top: 12px;
+
     }
 
 
     .fullscreen {
 
-        right: 15px;
+        right: 12px;
 
-        top: 15px;
+        top: 12px;
+
     }
+
 }
