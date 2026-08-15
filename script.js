@@ -951,3 +951,42 @@ function animate() {
 
 
 animate();
+// ==========================================
+// MÚSICA
+// ==========================================
+
+const music =
+    document.getElementById("music");
+
+const musicButton =
+    document.getElementById("musicButton");
+
+let musicPlaying = false;
+
+
+// Al tocar el botón
+musicButton.addEventListener(
+    "click",
+    () => {
+
+        if (!musicPlaying) {
+
+            music.volume = 0.5;
+
+            music.play();
+
+            musicPlaying = true;
+
+            musicButton.textContent = "🔊";
+
+        } else {
+
+            music.pause();
+
+            musicPlaying = false;
+
+            musicButton.textContent = "🎵";
+        }
+
+    }
+);
