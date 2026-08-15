@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+          content="width=device-width, initial-scale=1.0,
+                   maximum-scale=1.0, user-scalable=no">
 
     <title>Para ti, Ariana ❤️</title>
 
@@ -12,75 +13,32 @@
 
 <body>
 
-    <!-- ENCABEZADO -->
-    <header>
-        <div class="heart-icon">♡</div>
+    <canvas id="space"></canvas>
 
+    <!-- Título -->
+    <div class="title">
+        <span>♡</span>
         <h1>PARA TI, ARIANA</h1>
+        <span>♡</span>
+    </div>
 
-        <div class="heart-icon">♡</div>
-    </header>
+    <!-- Botón música -->
+    <button id="musicButton" class="control music">
+        🎵
+    </button>
 
+    <!-- Pantalla completa -->
+    <button id="fullscreenButton"
+            class="control fullscreen">
+        ⛶
+    </button>
 
-    <!-- ESCENA 3D -->
-    <main>
+    <!-- Música -->
+    <audio id="music" loop>
+        <source src="Music/Saturno - Pablo Alborán  KARAOKE  _Excelente calidad_(MP3_160K).mp3">
+                type="audio/mpeg">
+    </audio>
 
-        <canvas id="space"></canvas>
-
-        <div class="center-text">
-            <span>✨</span>
-            <p>Un universo creado para ti</p>
-        </div>
-
-    </main>
-
-
-    <!-- PIE -->
-    <footer>
-
-        <h2>
-            For my mom & Dad
-            <span>💔 ❤️</span>
-        </h2>
-
-        <div class="features">
-
-            <div>
-                <strong>♡</strong>
-                <p>Corazón 3D<br>360°</p>
-            </div>
-
-            <div>
-                <strong>✦</strong>
-                <p>Miles de<br>partículas</p>
-            </div>
-
-            <div>
-                <strong>☄</strong>
-                <p>Estrellas<br>fugaces</p>
-            </div>
-
-            <div>
-                <strong>⟳</strong>
-                <p>Movimiento<br>continuo</p>
-            </div>
-
-            <div>
-                <strong>▣</strong>
-                <p>Totalmente<br>responsive</p>
-            </div>
-
-        </div>
-
-    </footer>
-
-<audio id="music" loop>
-    <source src="Music/Saturno - Pablo Alborán  KARAOKE  _Excelente calidad_(MP3_160K).mp3">
-</audio>
-
-<button id="musicButton" class="music-button">
-    🎵
-</button>
     <script src="script.js"></script>
 
 </body>
