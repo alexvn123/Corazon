@@ -341,11 +341,61 @@ footer h2 span {
     .features p {
 
         font-size: 8px;
+        
     }
 
 
     .center-text p {
 
         font-size: 10px;
+    }
+}
+.music-button {
+    position: fixed;
+
+    right: 20px;
+    bottom: 190px;
+
+    width: 55px;
+    height: 55px;
+
+    border: 2px solid #d900ff;
+    border-radius: 50%;
+
+    background: rgba(30, 0, 50, .8);
+
+    color: white;
+
+    font-size: 25px;
+
+    cursor: pointer;
+
+    z-index: 100;
+
+    box-shadow:
+        0 0 10px #d000ff,
+        0 0 25px #8b00ff;
+
+    transition: .3s;
+}
+
+.music-button:hover {
+    transform: scale(1.15);
+
+    box-shadow:
+        0 0 15px #fff,
+        0 0 35px #d000ff;
+}
+
+@media (max-width: 600px) {
+
+    .music-button {
+        right: 15px;
+        bottom: 145px;
+
+        width: 48px;
+        height: 48px;
+
+        font-size: 21px;
     }
 }
