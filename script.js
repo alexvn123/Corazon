@@ -5,9 +5,9 @@ const ctx =
     canvas.getContext("2d");
 
 
-// ==========================================
+// ======================================================
 // CONFIGURACIÓN
-// ==========================================
+// ======================================================
 
 let width;
 let height;
@@ -15,30 +15,54 @@ let height;
 let centerX;
 let centerY;
 
-const PARTICLE_COUNT = 3500;
-
-const STAR_COUNT = 450;
-
-const SHOOTING_STAR_COUNT = 8;
+let dpr;
 
 
-// ==========================================
+// Corazón fino
+const HEART_SCALE = 14;
+
+
+// Cantidad de partículas
+const PARTICLE_COUNT = 2300;
+
+
+// Estrellas
+const STAR_COUNT = 600;
+
+
+// Estrellas fugaces
+const SHOOTING_STARS = 12;
+
+
+// ======================================================
 // RESIZE
-// ==========================================
+// ======================================================
 
 function resize() {
 
-    const dpr =
-        Math.min(window.devicePixelRatio || 1, 2);
+    dpr =
+        Math.min(
+            window.devicePixelRatio || 1,
+            2
+        );
 
-    width = canvas.clientWidth;
-    height = canvas.clientHeight;
+    width =
+        window.innerWidth;
+
+    height =
+        window.innerHeight;
 
     canvas.width =
         width * dpr;
 
     canvas.height =
         height * dpr;
+
+    canvas.style.width =
+        width + "px";
+
+    canvas.style.height =
+        height + "px";
 
     ctx.setTransform(
         dpr,
@@ -49,8 +73,11 @@ function resize() {
         0
     );
 
-    centerX = width / 2;
-    centerY = height / 2;
+    centerX =
+        width / 2;
+
+    centerY =
+        height / 2;
 }
 
 window.addEventListener(
@@ -61,46 +88,67 @@ window.addEventListener(
 resize();
 
 
-// ==========================================
-// VARIABLES 360°
-// ==========================================
+// ======================================================
+// CÁMARA 360°
+// ======================================================
 
-let cameraAngle = 0;
+let rotationX = 0;
 
-let cameraX = 0;
-let cameraZ = 0;
+let rotationY = 0;
 
-let time = 0;
+let zoom = 1;
 
 
-// ==========================================
-// CORAZÓN
-// ==========================================
+// Rotación automática
+let autoRotation = 0;
 
-function heartFunction(t) {
+
+// ======================================================
+// CORAZÓN MATEMÁTICO
+// ======================================================
+
+function heartPoint(t) {
 
     const x =
         16 *
-        Math.pow(Math.sin(t), 3);
+        Math.pow(
+            Math.sin(t),
+            3
+        );
 
     const y =
-        13 * Math.cos(t)
-        - 5 * Math.cos(2 * t)
-        - 2 * Math.cos(3 * t)
+        13 *
+        Math.cos(t)
+
+        - 5 *
+        Math.cos(2 * t)
+
+        - 2 *
+        Math.cos(3 * t)
+
         - Math.cos(4 * t);
 
+
     return {
-        x,
-        y
+
+        x: x * HEART_SCALE,
+
+        y: -y * HEART_SCALE
     };
 }
 
 
-// ==========================================
+// ======================================================
 // PARTÍCULAS DEL CORAZÓN
-// ==========================================
+// ======================================================
 
-const heartParticles = [];
+const particles = [];
+
+
+// IMPORTANTE:
+// Esta variable controla cuánto se ha dibujado.
+
+let drawProgress = 0;
 
 
 // Crear partículas
@@ -116,56 +164,65 @@ for (
         Math.PI * 2;
 
 
-    const heart =
-        heartFunction(t);
+    const point =
+        heartPoint(t);
 
 
-    // Variación para hacer el corazón
-    // más grueso y lleno
+    /*
+        Hacemos el corazón fino:
+
+        La mayoría de partículas quedan
+        muy cerca de la línea exterior.
+    */
 
     const thickness =
         Math.pow(
             Math.random(),
-            0.55
+            4
         );
 
 
+    const angle =
+        Math.random() *
+        Math.PI * 2;
+
+
     const spread =
-        thickness * 1.9;
+        thickness * 5;
 
 
     const x =
-        heart.x +
-        (Math.random() - 0.5) *
+        point.x +
+        Math.cos(angle) *
         spread;
 
 
     const y =
-        heart.y +
-        (Math.random() - 0.5) *
+        point.y +
+        Math.sin(angle) *
         spread;
 
 
     const z =
-        (Math.random() - 0.5) *
-        15;
+        (Math.random() - .5) *
+        20;
 
 
-    heartParticles.push({
+    particles.push({
 
         x,
         y,
         z,
 
-        originalX: x,
-        originalY: y,
-        originalZ: z,
+        t,
 
         size:
-            Math.random() * 1.5 + .3,
+            Math.random() *
+            1.3 + .35,
 
         alpha:
-            Math.random() * .8 + .2,
+            Math.random() *
+            .8 + .2,
 
         phase:
             Math.random() *
@@ -173,14 +230,22 @@ for (
 
         speed:
             Math.random() *
-            .03 + .01
+            .8 + .2
     });
 }
 
 
-// ==========================================
-// ESTRELLAS DEL ESPACIO
-// ==========================================
+// Ordenar por posición del corazón
+
+particles.sort(
+    (a, b) =>
+        a.t - b.t
+);
+
+
+// ======================================================
+// ESTRELLAS
+// ======================================================
 
 const stars = [];
 
@@ -195,34 +260,106 @@ for (
 
         x:
             (Math.random() - .5) *
-            1200,
+            1500,
 
         y:
             (Math.random() - .5) *
-            800,
+            900,
 
         z:
             Math.random() *
-            900 + 100,
+            1000,
 
         size:
             Math.random() *
-            1.5 + .3,
+            1.5 + .2,
 
-        alpha:
+        brightness:
             Math.random() *
             .8 + .2,
 
-        twinkle:
+        phase:
             Math.random() *
             Math.PI * 2
     });
 }
 
 
-// ==========================================
+// ======================================================
+// GALAXIA
+// ======================================================
+
+const galaxyParticles = [];
+
+const GALAXY_PARTICLES = 1500;
+
+
+for (
+    let i = 0;
+    i < GALAXY_PARTICLES;
+    i++
+) {
+
+    const angle =
+        Math.random() *
+        Math.PI * 2;
+
+
+    const radius =
+        Math.pow(
+            Math.random(),
+            .65
+        ) *
+        300;
+
+
+    // Forma espiral
+
+    const spiral =
+        angle +
+        radius *
+        .018;
+
+
+    const x =
+        Math.cos(spiral) *
+        radius;
+
+
+    const z =
+        Math.sin(spiral) *
+        radius;
+
+
+    const y =
+        (Math.random() - .5) *
+        (20 + radius * .06);
+
+
+    galaxyParticles.push({
+
+        x,
+        y,
+        z,
+
+        radius,
+
+        angle,
+
+        size:
+            Math.random() *
+            1.8 + .3,
+
+        alpha:
+            Math.random() *
+            .7 + .2
+    });
+}
+
+
+// ======================================================
 // ESTRELLAS FUGACES
-// ==========================================
+// ======================================================
 
 const shootingStars = [];
 
@@ -241,7 +378,7 @@ function createShootingStar() {
 
     if (side === 0) {
 
-        x = -100;
+        x = -150;
 
         y =
             Math.random() *
@@ -252,7 +389,7 @@ function createShootingStar() {
     else if (side === 1) {
 
         x =
-            width + 100;
+            width + 150;
 
         y =
             Math.random() *
@@ -266,7 +403,7 @@ function createShootingStar() {
             Math.random() *
             width;
 
-        y = -100;
+        y = -150;
 
     }
 
@@ -277,18 +414,18 @@ function createShootingStar() {
             width;
 
         y =
-            height + 100;
+            height + 150;
     }
 
 
     const targetX =
-        width / 2 +
+        centerX +
         (Math.random() - .5) *
         width;
 
 
     const targetY =
-        height / 2 +
+        centerY +
         (Math.random() - .5) *
         height;
 
@@ -301,11 +438,21 @@ function createShootingStar() {
         targetY - y;
 
 
-    const length =
+    const distance =
         Math.sqrt(
             dx * dx +
             dy * dy
         );
+
+
+    /*
+        MÁS RÁPIDAS
+        que la versión anterior.
+    */
+
+    const speed =
+        10 +
+        Math.random() * 9;
 
 
     shootingStars.push({
@@ -314,32 +461,34 @@ function createShootingStar() {
         y,
 
         vx:
-            dx / length *
-            (5 + Math.random() * 5),
+            dx / distance *
+            speed,
 
         vy:
-            dy / length *
-            (5 + Math.random() * 5),
+            dy / distance *
+            speed,
 
         life: 0,
 
         maxLife:
-            80 + Math.random() * 70,
-
-        size:
-            1 + Math.random() * 2,
+            60 +
+            Math.random() * 60,
 
         length:
-            40 + Math.random() * 90
+            70 +
+            Math.random() * 100,
+
+        size:
+            Math.random() * 1.5 + 1
     });
 }
 
 
-// Crear varias al inicio
+// Crear inicialmente
 
 for (
     let i = 0;
-    i < SHOOTING_STAR_COUNT;
+    i < SHOOTING_STARS;
     i++
 ) {
 
@@ -347,88 +496,98 @@ for (
 }
 
 
-// ==========================================
+// ======================================================
 // PROYECCIÓN 3D
-// ==========================================
+// ======================================================
 
-function project3D(x, y, z) {
+function project3D(
+    x,
+    y,
+    z
+) {
 
-    // Rotación horizontal 360°
+    // Giro automático
+
+    const angle =
+        autoRotation +
+        rotationY;
+
 
     const cos =
-        Math.cos(cameraAngle);
+        Math.cos(angle);
 
     const sin =
-        Math.sin(cameraAngle);
+        Math.sin(angle);
 
 
-    const rotatedX =
+    const rx =
         x * cos -
         z * sin;
 
 
-    const rotatedZ =
+    const rz =
         x * sin +
         z * cos;
 
 
-    // Rotación vertical
+    // Giro vertical
 
-    const verticalAngle =
-        Math.sin(time * .25) *
-        .18;
+    const vertical =
+        rotationX;
 
 
     const cosV =
-        Math.cos(verticalAngle);
+        Math.cos(vertical);
 
     const sinV =
-        Math.sin(verticalAngle);
+        Math.sin(vertical);
 
 
-    const rotatedY =
+    const ry =
         y * cosV -
-        rotatedZ * sinV;
+        rz * sinV;
 
 
     const finalZ =
         y * sinV +
-        rotatedZ * cosV;
+        rz * cosV;
 
 
-    const cameraDistance =
-        420;
+    // Perspectiva
+
+    const camera =
+        650;
 
 
     const scale =
-        cameraDistance /
-        (cameraDistance + finalZ);
+        camera /
+        (camera + finalZ);
 
 
     return {
 
         x:
             centerX +
-            rotatedX *
+            rx *
             scale *
-            8,
+            zoom,
 
         y:
             centerY +
-            rotatedY *
+            ry *
             scale *
-            8,
+            zoom,
 
         scale
     };
 }
 
 
-// ==========================================
+// ======================================================
 // FONDO
-// ==========================================
+// ======================================================
 
-function drawBackground() {
+function background() {
 
     const gradient =
         ctx.createRadialGradient(
@@ -437,25 +596,28 @@ function drawBackground() {
             0,
             centerX,
             centerY,
-            Math.max(width, height)
+            Math.max(
+                width,
+                height
+            )
         );
 
 
     gradient.addColorStop(
         0,
-        "rgba(55,0,90,.18)"
+        "rgba(45,0,70,.35)"
     );
 
 
     gradient.addColorStop(
-        .45,
-        "rgba(18,0,35,.4)"
+        .35,
+        "rgba(13,0,30,.5)"
     );
 
 
     gradient.addColorStop(
         1,
-        "rgba(0,0,0,.9)"
+        "rgba(0,0,0,.95)"
     );
 
 
@@ -472,9 +634,9 @@ function drawBackground() {
 }
 
 
-// ==========================================
+// ======================================================
 // ESTRELLAS
-// ==========================================
+// ======================================================
 
 function drawStars() {
 
@@ -493,27 +655,36 @@ function drawStars() {
         const twinkle =
             .5 +
             Math.sin(
-                time * 2 +
-                star.twinkle
-            ) * .5;
+                performance.now() *
+                .002 +
+                star.phase
+            ) *
+            .5;
 
 
         ctx.beginPath();
 
 
         ctx.fillStyle =
-            `rgba(255,255,255,${
-                star.alpha *
-                twinkle
-            })`;
+            `rgba(
+                255,
+                255,
+                255,
+                ${star.brightness * twinkle}
+            )`;
 
 
         ctx.arc(
+
             p.x,
+
             p.y,
+
             star.size *
             p.scale,
+
             0,
+
             Math.PI * 2
         );
 
@@ -523,52 +694,230 @@ function drawStars() {
 }
 
 
-// ==========================================
-// CORAZÓN
-// ==========================================
+// ======================================================
+// GALAXIA
+// ======================================================
+
+function drawGalaxy() {
+
+    /*
+        La galaxia está debajo
+        del corazón.
+    */
+
+    const galaxyY =
+        height * .72;
+
+
+    for (
+        const p of galaxyParticles
+    ) {
+
+        // Rotación propia
+
+        const a =
+            p.angle +
+            time * .12;
+
+
+        const x =
+            Math.cos(a) *
+            p.radius;
+
+
+        const z =
+            Math.sin(a) *
+            p.radius;
+
+
+        const projected =
+            project3D(
+                x,
+                p.y,
+                z
+            );
+
+
+        const finalY =
+            galaxyY +
+            (projected.y -
+             centerY) *
+            .35;
+
+
+        ctx.beginPath();
+
+
+        /*
+            Núcleo más brillante.
+        */
+
+        const brightness =
+            Math.max(
+                0,
+                1 -
+                p.radius / 300
+            );
+
+
+        ctx.fillStyle =
+            `rgba(
+                220,
+                ${70 + brightness * 100},
+                255,
+                ${p.alpha}
+            )`;
+
+
+        ctx.shadowBlur =
+            8 *
+            brightness;
+
+
+        ctx.shadowColor =
+            "#c000ff";
+
+
+        ctx.arc(
+
+            projected.x,
+
+            finalY,
+
+            p.size *
+            projected.scale,
+
+            0,
+
+            Math.PI * 2
+        );
+
+
+        ctx.fill();
+
+
+        ctx.shadowBlur = 0;
+    }
+
+
+    // Núcleo de la galaxia
+
+    const glow =
+        ctx.createRadialGradient(
+            centerX,
+            galaxyY,
+            0,
+            centerX,
+            galaxyY,
+            150
+        );
+
+
+    glow.addColorStop(
+        0,
+        "rgba(255,255,255,.95)"
+    );
+
+
+    glow.addColorStop(
+        .08,
+        "rgba(255,170,255,.8)"
+    );
+
+
+    glow.addColorStop(
+        .3,
+        "rgba(210,50,255,.35)"
+    );
+
+
+    glow.addColorStop(
+        1,
+        "rgba(100,0,255,0)"
+    );
+
+
+    ctx.fillStyle =
+        glow;
+
+
+    ctx.beginPath();
+
+
+    ctx.arc(
+        centerX,
+        galaxyY,
+        150,
+        0,
+        Math.PI * 2
+    );
+
+
+    ctx.fill();
+}
+
+
+// ======================================================
+// CORAZÓN PROGRESIVO
+// ======================================================
 
 function drawHeart() {
 
+    /*
+        Solamente mostramos las partículas
+        cuyo t ya ha sido recorrido.
+    */
+
+    const maxT =
+        drawProgress;
+
+
     for (
-        const particle
-        of heartParticles
+        const p of particles
     ) {
 
-        // Movimiento orgánico
+        if (
+            p.t > maxT
+        ) {
+
+            continue;
+        }
+
 
         const wave =
             Math.sin(
                 time *
-                particle.speed *
-                10 +
-                particle.phase
-            ) * .8;
+                p.speed +
+                p.phase
+            );
 
 
         const x =
-            particle.originalX +
-            wave;
+            p.x +
+            wave *
+            .45;
 
 
         const y =
-            particle.originalY +
+            p.y +
             Math.cos(
                 time *
-                .5 +
-                particle.phase
-            ) * .4;
+                .7 +
+                p.phase
+            ) *
+            .35;
 
 
         const z =
-            particle.originalZ +
+            p.z +
             Math.sin(
-                time *
-                .7 +
-                particle.phase
-            ) * 2;
+                time +
+                p.phase
+            ) *
+            2;
 
 
-        const p =
+        const projected =
             project3D(
                 x,
                 y,
@@ -576,19 +925,9 @@ function drawHeart() {
             );
 
 
-        if (
-            p.x < -20 ||
-            p.x > width + 20 ||
-            p.y < -20 ||
-            p.y > height + 20
-        ) {
-            continue;
-        }
-
-
         const size =
-            particle.size *
-            p.scale;
+            p.size *
+            projected.scale;
 
 
         ctx.beginPath();
@@ -596,26 +935,35 @@ function drawHeart() {
 
         ctx.fillStyle =
             `rgba(
-                ${220 + Math.random() * 35},
-                ${60 + Math.random() * 130},
+                245,
+                ${90 + Math.random() * 100},
                 255,
-                ${particle.alpha}
+                ${p.alpha}
             )`;
 
 
         ctx.shadowBlur =
-            12 * p.scale;
+            10 *
+            projected.scale;
 
 
         ctx.shadowColor =
-            "#d000ff";
+            "#e000ff";
 
 
         ctx.arc(
-            p.x,
-            p.y,
-            Math.max(size, .3),
+
+            projected.x,
+
+            projected.y,
+
+            Math.max(
+                size,
+                .3
+            ),
+
             0,
+
             Math.PI * 2
         );
 
@@ -628,16 +976,220 @@ function drawHeart() {
 }
 
 
-// ==========================================
+// ======================================================
+// PUNTA QUE DIBUJA EL CORAZÓN
+// ======================================================
+
+function drawDrawingPoint() {
+
+    const point =
+        heartPoint(
+            drawProgress
+        );
+
+
+    const p =
+        project3D(
+            point.x,
+            point.y,
+            0
+        );
+
+
+    // Aura
+
+    const glow =
+        ctx.createRadialGradient(
+            p.x,
+            p.y,
+            0,
+            p.x,
+            p.y,
+            55
+        );
+
+
+    glow.addColorStop(
+        0,
+        "rgba(255,255,255,1)"
+    );
+
+
+    glow.addColorStop(
+        .12,
+        "rgba(255,180,255,.9)"
+    );
+
+
+    glow.addColorStop(
+        .4,
+        "rgba(220,0,255,.35)"
+    );
+
+
+    glow.addColorStop(
+        1,
+        "rgba(200,0,255,0)"
+    );
+
+
+    ctx.fillStyle =
+        glow;
+
+
+    ctx.beginPath();
+
+
+    ctx.arc(
+        p.x,
+        p.y,
+        55,
+        0,
+        Math.PI * 2
+    );
+
+
+    ctx.fill();
+
+
+    // Punto central
+
+    ctx.beginPath();
+
+
+    ctx.fillStyle =
+        "white";
+
+
+    ctx.shadowBlur =
+        25;
+
+
+    ctx.shadowColor =
+        "#ff00ff";
+
+
+    ctx.arc(
+        p.x,
+        p.y,
+        4,
+        0,
+        Math.PI * 2
+    );
+
+
+    ctx.fill();
+
+
+    ctx.shadowBlur = 0;
+}
+
+
+// ======================================================
+// COLA DE PARTÍCULAS
+// ======================================================
+
+const trail = [];
+
+
+function updateTrail() {
+
+    const point =
+        heartPoint(
+            drawProgress
+        );
+
+
+    trail.push({
+
+        x: point.x,
+
+        y: point.y,
+
+        life: 1
+    });
+
+
+    if (
+        trail.length > 100
+    ) {
+
+        trail.shift();
+    }
+
+
+    for (
+        const p of trail
+    ) {
+
+        p.life *= .95;
+    }
+}
+
+
+function drawTrail() {
+
+    for (
+        let i = 0;
+        i < trail.length;
+        i++
+    ) {
+
+        const p =
+            trail[i];
+
+
+        const projected =
+            project3D(
+                p.x,
+                p.y,
+                0
+            );
+
+
+        ctx.beginPath();
+
+
+        ctx.fillStyle =
+            `rgba(
+                255,
+                100,
+                255,
+                ${p.life * .25}
+            )`;
+
+
+        ctx.arc(
+
+            projected.x,
+
+            projected.y,
+
+            Math.random() * 2,
+
+            0,
+
+            Math.PI * 2
+        );
+
+
+        ctx.fill();
+    }
+}
+
+
+// ======================================================
 // ESTRELLAS FUGACES
-// ==========================================
+// ======================================================
 
 function drawShootingStars() {
 
     for (
         let i =
             shootingStars.length - 1;
+
         i >= 0;
+
         i--
     ) {
 
@@ -645,9 +1197,13 @@ function drawShootingStars() {
             shootingStars[i];
 
 
-        star.x += star.vx;
+        star.x +=
+            star.vx;
 
-        star.y += star.vy;
+
+        star.y +=
+            star.vy;
+
 
         star.life++;
 
@@ -659,7 +1215,8 @@ function drawShootingStars() {
 
         const alpha =
             Math.sin(
-                progress * Math.PI
+                progress *
+                Math.PI
             );
 
 
@@ -686,12 +1243,14 @@ function drawShootingStars() {
             star.length;
 
 
-        // Cola luminosa
+        // Cola
 
         const gradient =
             ctx.createLinearGradient(
+
                 tailX,
                 tailY,
+
                 star.x,
                 star.y
             );
@@ -699,19 +1258,29 @@ function drawShootingStars() {
 
         gradient.addColorStop(
             0,
-            "rgba(255,255,255,0)"
+            "rgba(255,0,255,0)"
         );
 
 
         gradient.addColorStop(
-            .5,
-            `rgba(180,100,255,${alpha * .4})`
+            .6,
+            `rgba(
+                180,
+                80,
+                255,
+                ${alpha * .5}
+            )`
         );
 
 
         gradient.addColorStop(
             1,
-            `rgba(255,255,255,${alpha})`
+            `rgba(
+                255,
+                255,
+                255,
+                ${alpha}
+            )`
         );
 
 
@@ -747,20 +1316,32 @@ function drawShootingStars() {
 
 
         ctx.fillStyle =
-            `rgba(255,255,255,${alpha})`;
+            `rgba(
+                255,
+                255,
+                255,
+                ${alpha}
+            )`;
 
 
-        ctx.shadowBlur = 20;
+        ctx.shadowBlur =
+            20;
+
 
         ctx.shadowColor =
             "#d000ff";
 
 
         ctx.arc(
+
             star.x,
+
             star.y,
+
             star.size * 2,
+
             0,
+
             Math.PI * 2
         );
 
@@ -789,39 +1370,99 @@ function drawShootingStars() {
 }
 
 
-// ==========================================
-// POLVO CÓSMICO
-// ==========================================
+// ======================================================
+// PARTÍCULAS AL TOCAR
+// ======================================================
 
-function drawCosmicDust() {
-
-    for (
-        let i = 0;
-        i < 90;
-        i++
-    ) {
-
-        const angle =
-            Math.random() *
-            Math.PI * 2;
+const explosions = [];
 
 
-        const distance =
-            130 +
-            Math.random() *
-            260;
+canvas.addEventListener(
+    "pointerdown",
+    function(e) {
+
+        // No crear explosión
+        // si se está usando botón
+
+        if (
+            e.target !== canvas
+        ) {
+
+            return;
+        }
 
 
         const x =
-            centerX +
-            Math.cos(angle) *
-            distance;
+            e.clientX;
 
 
         const y =
-            centerY +
-            Math.sin(angle) *
-            distance;
+            e.clientY;
+
+
+        for (
+            let i = 0;
+            i < 80;
+            i++
+        ) {
+
+            const angle =
+                Math.random() *
+                Math.PI * 2;
+
+
+            const speed =
+                Math.random() *
+                5 + 1;
+
+
+            explosions.push({
+
+                x,
+
+                y,
+
+                vx:
+                    Math.cos(angle) *
+                    speed,
+
+                vy:
+                    Math.sin(angle) *
+                    speed,
+
+                life: 1
+            });
+        }
+    }
+);
+
+
+function drawExplosions() {
+
+    for (
+        let i =
+            explosions.length - 1;
+
+        i >= 0;
+
+        i--
+    ) {
+
+        const p =
+            explosions[i];
+
+
+        p.x += p.vx;
+
+        p.y += p.vy;
+
+
+        p.vx *= .97;
+
+        p.vy *= .97;
+
+
+        p.life *= .95;
 
 
         ctx.beginPath();
@@ -829,83 +1470,370 @@ function drawCosmicDust() {
 
         ctx.fillStyle =
             `rgba(
-                190,
-                70,
                 255,
-                ${Math.random() * .25}
+                120,
+                255,
+                ${p.life}
             )`;
 
 
+        ctx.shadowBlur =
+            10;
+
+
+        ctx.shadowColor =
+            "#ff00ff";
+
+
         ctx.arc(
-            x,
-            y,
-            Math.random() * 1.5,
+            p.x,
+            p.y,
+            1.5,
             0,
             Math.PI * 2
         );
 
 
         ctx.fill();
+
+
+        ctx.shadowBlur = 0;
+
+
+        if (
+            p.life < .03
+        ) {
+
+            explosions.splice(
+                i,
+                1
+            );
+        }
     }
 }
 
 
-// ==========================================
-// LUZ CENTRAL
-// ==========================================
+// ======================================================
+// CONTROL CON EL DEDO
+// ======================================================
 
-function drawCenterGlow() {
+let dragging = false;
 
-    const radius =
-        Math.min(width, height) *
-        .3;
+let lastX = 0;
+
+let lastY = 0;
 
 
-    const gradient =
-        ctx.createRadialGradient(
-            centerX,
-            centerY,
-            0,
-            centerX,
-            centerY,
-            radius
+canvas.addEventListener(
+    "pointerdown",
+    e => {
+
+        dragging = true;
+
+        lastX =
+            e.clientX;
+
+        lastY =
+            e.clientY;
+
+        canvas.setPointerCapture(
+            e.pointerId
         );
+    }
+);
 
 
-    gradient.addColorStop(
-        0,
-        "rgba(220,0,255,.13)"
+canvas.addEventListener(
+    "pointermove",
+    e => {
+
+        if (!dragging) {
+            return;
+        }
+
+
+        const dx =
+            e.clientX -
+            lastX;
+
+
+        const dy =
+            e.clientY -
+            lastY;
+
+
+        rotationY +=
+            dx * .008;
+
+
+        rotationX +=
+            dy * .006;
+
+
+        // Limitar giro vertical
+
+        rotationX =
+            Math.max(
+                -.9,
+                Math.min(
+                    .9,
+                    rotationX
+                )
+            );
+
+
+        lastX =
+            e.clientX;
+
+
+        lastY =
+            e.clientY;
+    }
+);
+
+
+canvas.addEventListener(
+    "pointerup",
+    e => {
+
+        dragging = false;
+
+        try {
+
+            canvas.releasePointerCapture(
+                e.pointerId
+            );
+
+        } catch {}
+    }
+);
+
+
+canvas.addEventListener(
+    "pointercancel",
+    () => {
+
+        dragging = false;
+    }
+);
+
+
+// ======================================================
+// ZOOM CON RUEDA
+// ======================================================
+
+canvas.addEventListener(
+    "wheel",
+    e => {
+
+        e.preventDefault();
+
+
+        zoom -=
+            e.deltaY *
+            .001;
+
+
+        zoom =
+            Math.max(
+                .55,
+                Math.min(
+                    1.8,
+                    zoom
+                )
+            );
+    },
+    {
+        passive: false
+    }
+);
+
+
+// ======================================================
+// ZOOM CON DOS DEDOS
+// ======================================================
+
+let lastDistance = null;
+
+
+canvas.addEventListener(
+    "touchmove",
+    e => {
+
+        if (
+            e.touches.length !== 2
+        ) {
+
+            return;
+        }
+
+
+        e.preventDefault();
+
+
+        const a =
+            e.touches[0];
+
+
+        const b =
+            e.touches[1];
+
+
+        const dx =
+            a.clientX -
+            b.clientX;
+
+
+        const dy =
+            a.clientY -
+            b.clientY;
+
+
+        const distance =
+            Math.sqrt(
+                dx * dx +
+                dy * dy
+            );
+
+
+        if (
+            lastDistance !== null
+        ) {
+
+            zoom +=
+                (distance -
+                 lastDistance) *
+                .005;
+
+
+            zoom =
+                Math.max(
+                    .55,
+                    Math.min(
+                        1.8,
+                        zoom
+                    )
+                );
+        }
+
+
+        lastDistance =
+            distance;
+
+    },
+    {
+        passive: false
+    }
+);
+
+
+canvas.addEventListener(
+    "touchend",
+    () => {
+
+        lastDistance = null;
+    }
+);
+
+
+// ======================================================
+// MÚSICA
+// ======================================================
+
+const music =
+    document.getElementById(
+        "music"
     );
 
 
-    gradient.addColorStop(
-        .35,
-        "rgba(120,0,255,.08)"
+const musicButton =
+    document.getElementById(
+        "musicButton"
     );
 
 
-    gradient.addColorStop(
-        1,
-        "rgba(0,0,0,0)"
+let playing = false;
+
+
+musicButton.addEventListener(
+    "click",
+    async () => {
+
+        try {
+
+            if (!playing) {
+
+                music.volume = .55;
+
+                await music.play();
+
+                playing = true;
+
+                musicButton.textContent =
+                    "🔊";
+
+            } else {
+
+                music.pause();
+
+                playing = false;
+
+                musicButton.textContent =
+                    "🎵";
+            }
+
+        } catch (error) {
+
+            console.log(
+                "No se pudo reproducir la música."
+            );
+        }
+    }
+);
+
+
+// ======================================================
+// PANTALLA COMPLETA
+// ======================================================
+
+const fullscreenButton =
+    document.getElementById(
+        "fullscreenButton"
     );
 
 
-    ctx.fillStyle =
-        gradient;
+fullscreenButton.addEventListener(
+    "click",
+    async () => {
+
+        try {
+
+            if (
+                !document.fullscreenElement
+            ) {
+
+                await document.documentElement
+                    .requestFullscreen();
+
+            } else {
+
+                await document.exitFullscreen();
+            }
+
+        } catch (error) {
+
+            console.log(error);
+        }
+    }
+);
 
 
-    ctx.fillRect(
-        0,
-        0,
-        width,
-        height
-    );
-}
+// ======================================================
+// ANIMACIÓN
+// ======================================================
 
+let time = 0;
 
-// ==========================================
-// ANIMACIÓN PRINCIPAL
-// ==========================================
 
 function animate() {
 
@@ -917,76 +1845,84 @@ function animate() {
     time += .016;
 
 
-    // Giro 360°
+    // Giro automático muy suave
 
-    cameraAngle += .004;
-
-
-    // Limpiar
-
-    ctx.fillStyle =
-        "rgba(0,0,0,.25)";
+    autoRotation +=
+        .0025;
 
 
-    ctx.fillRect(
-        0,
-        0,
-        width,
-        height
-    );
+    // ==============================================
+    // DIBUJAR EL CORAZÓN
+    // ==============================================
+
+    drawProgress +=
+        .025;
 
 
-    drawBackground();
+    if (
+        drawProgress >
+        Math.PI * 2
+    ) {
 
-    drawCenterGlow();
+        drawProgress =
+            0;
+    }
+
+
+    // ==============================================
+    // ACTUALIZAR
+    // ==============================================
+
+    updateTrail();
+
+
+    // ==============================================
+    // FONDO
+    // ==============================================
+
+    background();
+
+
+    // ==============================================
+    // ESTRELLAS
+    // ==============================================
 
     drawStars();
 
-    drawCosmicDust();
+
+    // ==============================================
+    // GALAXIA
+    // ==============================================
+
+    drawGalaxy();
+
+
+    // ==============================================
+    // CORAZÓN
+    // ==============================================
 
     drawHeart();
 
+
+    drawTrail();
+
+
+    drawDrawingPoint();
+
+
+    // ==============================================
+    // ESTRELLAS FUGACES
+    // ==============================================
+
     drawShootingStars();
+
+
+    // ==============================================
+    // EXPLOSIONES
+    // ==============================================
+
+    drawExplosions();
 }
 
 
 animate();
-// ==========================================
-// MÚSICA
-// ==========================================
-
-const music =
-    document.getElementById("music");
-
-const musicButton =
-    document.getElementById("musicButton");
-
-let musicPlaying = false;
-
-
-// Al tocar el botón
-musicButton.addEventListener(
-    "click",
-    () => {
-
-        if (!musicPlaying) {
-
-            music.volume = 0.5;
-
-            music.play();
-
-            musicPlaying = true;
-
-            musicButton.textContent = "🔊";
-
-        } else {
-
-            music.pause();
-
-            musicPlaying = false;
-
-            musicButton.textContent = "🎵";
-        }
-
-    }
-);
